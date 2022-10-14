@@ -1,0 +1,128 @@
+---
+title: PWS dataset manuscript
+shorttitle: PWS
+leftheader: PWS
+author: 
+  - name: Matti Vuorre
+    affiliation: 1
+    address: Oxford Internet Institute, University of Oxford
+    email: matti.vuorre@oii.ox.ac.uk
+    role:
+      - Conceptualization
+      - Data curation
+      - Formal analysis
+      - Investigation
+      - Methodology
+      - Project Administration
+      - Software
+      - Validation
+      - Visualization
+      - Writing - Original Draft Preparation
+      - Writing - Review & Editing
+  - name: Kristoffer Magnusson
+    affiliation: 2
+    address: Sweden
+    email: 
+    role:
+      - Conceptualization
+      - Data curation
+      - Formal analysis
+      - Investigation
+      - Methodology
+      - Project Administration
+      - Software
+      - Validation
+      - Visualization
+      - Writing - Original Draft Preparation
+      - Writing - Review & Editing
+  - name: Niklas Johannes
+    affiliation: "1,3"
+    address: Oxford Internet Institute, University of Oxford
+    email: niklas.johannes@oii.ox.ac.uk
+    role:
+      - Conceptualization
+      - Data curation
+      - Formal analysis
+      - Investigation
+      - Methodology
+      - Project Administration
+      - Software
+      - Validation
+      - Visualization
+      - Writing - Original Draft Preparation
+      - Writing - Review & Editing
+  - name: James Butlin
+    affiliation: 4
+    address: FuturLab
+    email: 
+    role:
+      - Methodology
+      - Software
+  - name: Andrew K. Przybylski
+    affiliation: 1
+    corresponding: yes
+    address: Oxford Internet Institute, University of Oxford
+    email: andy.przybylski@oii.ox.ac.uk
+    role:
+      - Conceptualization
+      - Data curation
+      - Funding acquisition
+      - Investigation
+      - Methodology
+      - Project Administration
+      - Resources
+      - Supervision
+      - Visualization
+      - Writing - Original Draft Preparation
+      - Writing - Review & Editing
+affiliation:
+  - id: 1
+    institution: Oxford Internet Institute, University of Oxford
+  - id: 2
+    institution: a
+  - id: 3
+    institution: b
+  - id: 4
+    institution: c
+authornote: |
+  \noindent \textbf{This pre-print is not yet peer-reviewed.}
+  
+  This research was supported by the Huo Family Foundation and Economic and Social Research Council Grant ES/T008709/1. The authors declare no competing interests. The funders had no role in study design, data collection and analysis, decision to publish, or preparation of the manuscript.
+abstract: | 
+  tbd
+  
+keywords: video games, well-being
+# wordcount: 
+bibliography: "references.bib"
+floatsintext: yes
+linenumbers: no
+draft: no
+mask: no
+figurelist: no
+tablelist: no
+footnotelist: no
+# header-includes:
+csl: "`r system.file('rmd', 'apa7.csl', package = 'papaja')`"
+documentclass: apa7
+classoption: jou
+output: 
+  papaja::apa6_pdf:
+    number_sections: false
+    keep_tex: false
+editor_options: 
+  chunk_output_type: console
+always_allow_html: true
+---
+
+```{r setup, include = FALSE}
+# Packages
+library(papaja)
+library(tidyverse)
+```
+
+tbd
+
+# References
+
+::: {#refs}
+:::
