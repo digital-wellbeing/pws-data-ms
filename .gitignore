@@ -3,3 +3,6 @@
 .RData
 .Ruserdata
 *_files/
+.Renviron
+/ms_cache/
+/ms_files/
