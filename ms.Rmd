@@ -68,6 +68,9 @@ library(papaja)
 library(scales)
 library(lubridate)
 library(citr)
+library(janitor)
+library(ggbeeswarm)
+library(ggrepel)
 library(patchwork)
 library(duckdb)
 library(dbplyr)
@@ -79,12 +82,13 @@ knitr::opts_chunk$set(
   warning = FALSE,
   cache = TRUE
 )
+options(knitr.kable.NA = '')
 theme_set(
   theme_linedraw() +
     theme(
       panel.grid.minor = element_blank(),
       panel.grid.major = element_line(linetype = "dotted")
-      )
+    )
 )
 ```
 
@@ -206,9 +210,7 @@ Then, in a second wave of recruitment in December 2022, the main branch of the g
 
 After participants joined the research branch of PWS, they were free to withdraw the study at any point and return to the main branch of the study (or stop playing PWS entirely). 
 
-# Data Records[^3]
-
-[^3]: This section should be used to explain each data record associated with this work, including the repository where this information is stored, and to provide an overview of the data files and their formats. Each external data record should be cited using our data citation format.
+# Data Records
 
 ## Participants
 
@@ -276,6 +278,134 @@ tbl(duck, "subtask_completed") %>%
   collect()
 ```
 
+```{r}
+#| label: fig-playday
+#| include: true
+#| fig.height: 7
+#| fig.cap: Figure of one player's gameplay and survey data for one day. A. Distribution of game play behaviors and events throughout the day. The y-axis indicates different events and behaviors, individual points are observations of those events when they happened (time; x-axis). We jittered the subtask_completed events vertically for visibility. The text labels show example variable values for each event (job_started shows the job name; subtask_completed shows the subtask name; we also labelled three survey responses to highlight their connection to the survey response data). B. Survey responses over time. Lines are exploratory LOESS fits.
+
+set.seed(5)
+ids <- sample(demo$pid, 1)
+x <- c(events_game, events_survey) %>% 
+  map(
+    ~tbl(duck, .) %>% 
+      filter(pid %in% ids) %>% 
+      collect()
+  ) %>% 
+  bind_rows() %>% 
+  arrange(pid, Time)
+
+x2 <- x %>% 
+  mutate(day = yday(Time)) %>% 
+  add_count(day) %>% 
+  filter(n == max(n)) %>% 
+  arrange(Time) %>% 
+  mutate(EventName = fct_inorder(EventName))
+
+date(x2$Time) <- as.Date("2022-01-01")
+date(x2$Time_utc) <- as.Date("2022-01-01")
+
+# Highlight a few responses
+set.seed(89)
+highlights <- x2 %>% 
+  filter(EventName %in% c("study_prompt_answered", "subtask_completed", "job_started")) %>% 
+  select(EventName, Time, LastSubtaskCompleted, CurrentJobName, LastStudyPromptType, response) %>% 
+  group_by(EventName, LastStudyPromptType) %>% 
+  slice_sample(n = 1) %>% 
+  ungroup() %>% 
+  mutate(x = factor(1:n())) %>% 
+  mutate(
+    label = case_when(
+      EventName %in% events_survey ~ str_glue("{LastStudyPromptType} ({response})"),
+      EventName == "subtask_completed" ~ LastSubtaskCompleted,
+      EventName == "job_started" ~ CurrentJobName
+    )
+  ) %>% 
+  replace_na(list(LastStudyPromptType = "Wellbeing"))
+
+p_day_game <- x2 %>% 
+  # filter(EventName %in% events_game) %>% 
+  ggplot(aes(Time, EventName)) +
+  scale_y_discrete(position = "right") +
+  scale_x_datetime(
+    date_breaks = "hour", date_labels = "%H:%M"
+  ) +
+  scale_alpha_manual(values = c(1, .2)) +
+  scale_size_manual(values = c(1.75, .75)) +
+  scale_color_brewer(palette = "Set1") +
+  geom_point(
+    position = position_quasirandom(
+      groupOnX = FALSE, 
+      varwidth = TRUE,
+      width = .4
+    ),
+    aes(
+      alpha = EventName == "subtask_completed",
+      size = EventName == "subtask_completed"
+    )
+  ) +
+  geom_point(
+    data = highlights,
+    aes(color = x),
+    size = 2
+  ) +
+  theme(
+    axis.title = element_blank(),
+    legend.position = "none"
+  )
+
+
+p_day_survey <- x2 %>% 
+  filter(EventName %in% events_survey) %>% 
+  ggplot(aes(Time, response)) +
+  scale_color_brewer(
+    "Survey item", 
+    palette = "Set1"
+  ) +
+  scale_x_datetime(
+    date_breaks = "hour", date_labels = "%H:%M"
+  ) +
+  scale_y_continuous(
+    "Response value",
+    expand = expansion(0.15)
+  ) +
+  stat_smooth(
+    data = . %>% anti_join(highlights),
+    aes(group = LastStudyPromptType), 
+    se = FALSE, span = 1, linewidth = .75, color = "gray70"
+  ) +
+  geom_point(size = 2) +
+  geom_point(
+    data = highlights,
+    aes(color = x),
+    size = 2
+  ) +
+  facet_wrap(
+    "LastStudyPromptType", 
+    ncol = 1, 
+    strip.position = "left"
+    ) +
+  theme(legend.position = "none")
+
+p_day_game <- p_day_game +
+  geom_label_repel(
+    data = highlights,
+    aes(label = label),
+    force_pull = 0.0001, fill = alpha("white", 0.5),
+    size = 2.1, box.padding = 0.9, 
+    min.segment.length = 0,
+    segment.color = "red", 
+    arrow = arrow(length = unit(0.04, "npc")),
+    nudge_y = 1, nudge_x = -3,
+    point.padding = 0.33
+  )
+
+(p_day_game / p_day_survey) +
+  plot_annotation(tag_level = "A") +
+  plot_layout(heights = c(3.5, 6.5))
+# library(ggrepel)
+```
+
 The research version of PWS recorded `r n_variables` variables when triggered by any one of `r n_events` in-game events or play behaviors. For example, when the player completed a subtask (e.g. washed the window frames; a subtask_completed *event*), the game saved the current time (a *variable* with millisecond precision); the name of the subtask; the character's current posture (standing, crouching, or prone); the character's current coordinates in the level; which washer, nozzle, and extension the character was currently using; progression within the level (e.g. 80%); and the current game mode (e.g. career mode or free play). The events, and their associated total numbers of observations, are listed in Table \@ref(tab:tbl-summary-events). The events and variables are described in detail in the associated codebook.
 
 ```{r}
@@ -293,16 +423,18 @@ events_game %>%
   summarise(
     Observations = sum(pid_n),
     Players = length(unique(pid)),
-    `Mdn(o/p)` = median(pid_n)
+    `Mdn(o/p)` = as.character(median(pid_n))
   ) %>% 
+  adorn_totals() %>% 
   mutate(
-    across(c(Observations, Players), ~number(.x, big.mark = ","))
+    across(-EventName, ~number(as.numeric(.x), big.mark = ","))
   ) %>% 
   apa_table(
     digits = 0,
     font_size = "small",
     span_text_columns = FALSE, 
     placement = "ht",
+    midrules = nrow(.) - 1,
     caption = "Counts of game play events.",
     note = "Mdn(o/p): Median observations per player."
   )
@@ -339,7 +471,7 @@ unique(events$EventName) %>%
 
 ## Survey materials
 
-In addition to regular PWS game events, the game was programmed to surface questions to the player. These questions appeared as in-game pop-ups six times per hour of active game play, but with the constraint that they would be at least five minutes apart. Immediately before a survey question appeared, an in-game communication pop-up informed the participant that there would be a survey question soon (Figure ZZZ). There were six different questions, and participants responded to all using a 1000px visual analog rating scale (VAS; Figure ZZZ). We show the questions, and their associated numbers of observation, in Table \@ref(tab:tbl-summary-survey).
+In addition to regular PWS game events, the game was programmed to surface questions to the player. These questions appeared as in-game pop-ups six times per hour of active game play, but with the constraint that they would be at least five minutes apart. Immediately before a survey question appeared, an in-game communication pop-up informed the participant that there would be a survey question soon (Figure \@ref(fig:fig-pws-play)). There were six different questions, and participants responded to all using a 1000px visual analog rating scale (VAS; Figure \@ref(fig:fig-pws-play)). We show the questions, and their associated samples sizes, in Table \@ref(tab:tbl-summary-survey).
 
 ```{r}
 #| label: tbl-summary-survey
@@ -353,20 +485,29 @@ dat_survey %>%
   summarise(
     Observations = n(),
     Players = length(unique(pid)),
-    `Mdn(o/p)` = median(pid_n)
+    `Mdn(o/p)` = as.character(median(pid_n))
   ) %>% 
+  adorn_totals() %>% 
   mutate(
-    across(c(Observations, Players), ~number(.x, big.mark = ","))
+    across(-Item, ~number(as.numeric(.x), big.mark = ","))
   ) %>% 
   apa_table(
     digits = 0,
     span_text_columns = FALSE, 
+    font_size = "small",
+    midrules = nrow(.) - 1,
     caption = "Counts of survey item responses",
     note = "Mdn(o/p): Median observations per player."
   )
 ```
 
 We queried subjective well-being with *"How are you feeling right now?"* with VAS endpoints *"very bad"* and *"very good"* [@killingsworthWanderingMindUnhappy2010]. Although feelings of well-being are often measured with separate positive and negative affect dimensions, our study necessitated the least intrusive item possible, and we therefore used the simple "happiness" question from @killingsworthWanderingMindUnhappy2010. Furthermore, such single-item measures have been found to have good validity and are recommended in intensive longitudinal studies [@songExaminingConcurrentPredictive2022]. 
+
+In order to capture the intrinsically motivating qualities of game play, we queried for "Enjoyment" with "I was enjoying playing Powerwash Simulator just now." with VAS endpoints *"Not at all"* to *"As much as possible"* [@johannesVideoGamePlay2021; @johnsonValidationTwoGame2018; @ryanMotivationalPullVideo2006]. 
+
+We were also interested in the broad concept of being focused on playing the game, both in terms of a positively valenced absorption [@csikszentmihalyiFlowPsychologyOptimal2009; @martinBriefApproachesAssessing2008], and a more "meditative" quality of attending rather than allowing one's mind to wander [@mrazekMindfulnessMindwanderingFinding2012; @schoolerMetaawarenessPerceptualDecoupling2011]. We measured this quality of focusing on game play with the prompt "I was totally focused on playing Powerwash Simulator just now." and a VAS from *"Not at all"* to *"As much as possible"*.
+
+We also queried for players feelings of autonomy, the degree to which they felt autonomous in their decisions of how to play and what to do in the game, using a modified version of XXX *"Just now, I was doing the things I really wanted to in Powerwash Simulator"* with VAS endpoints *"Not at all"* and *"As much as possible"*. We queried their feelings of competence with *"Just now, I felt competent playing PowerWash Simulator"*, and feelings of immersion with *"Just now, I felt completely immersed in PowerWash Simulator"*, both with the same VAS as the autonomy item.
 
 ```{r}
 #| label: fig-response-data
@@ -458,96 +599,66 @@ p_hour <- dat_survey %>%
   plot_annotation(tag_level = "A")
 ```
 
-In order to capture the intrinsically motivating qualities of game play, we queried for "Enjoyment" with "I was enjoying playing Powerwash Simulator just now." with VAS endpoints *"Not at all"* to *"As much as possible"* [@johannesVideoGamePlay2021; @johnsonValidationTwoGame2018; @ryanMotivationalPullVideo2006]. We were also interested in the broad concept of being focused on playing the game, both in terms of a positively valenced absorption [@csikszentmihalyiFlowPsychologyOptimal2009; @martinBriefApproachesAssessing2008], and a more "meditative" quality of attending rather than allowing one's mind to wander [@mrazekMindfulnessMindwanderingFinding2012; @schoolerMetaawarenessPerceptualDecoupling2011]. We measured this quality of focusing on game play with the prompt "I was totally focused on playing Powerwash Simulator just now." and a VAS from *"Not at all"* to *"As much as possible"*.
+The items were surfaced with equal probabilities, but the motivation items were added later in the experiment. In addition, at every login, there was a 10% probability that the player was asked the well-being item. We summarize the volumes of participants' responses to the survey items in Figure \@ref(fig:fig-response-data).
 
-The items were surfaced with equal probabilities. In addition, at every login, there was a 10% probability that the player was asked the well-being item. We summarize the volumes of participants' responses to the survey items in Figure \@ref(fig:fig-response-data).
+# Technical Validation
 
+All data was automatically logged either by the PlayFab telemetry collecting system, or sent to the Qualtrics API. Therefore the likelihood of human error was minimised at each step. Nevertheless, quality considerations remained due to various technical issues in the internet connection between the player's computer and PlayFab and Qualtrics, and to improperly configured system clocks on players computers.
+
+# Usage Notes
+
+Here, we provide an example of using these data to calculate day-level play time per participant, the focus of much of recent research.
 
 ```{r}
-#| label: fig-day-of-play
+#| label: fig-sessions
 #| include: true
-#| fig.cap: Work in progress. Figure of one player's data for one day.
+#| fig.cap: Summary of session durations for a random subset of 100 players.
 
-# Figure of a typical evening
-# Show a few people and zoom in on one
-
+# This is horrible and probably wrong but just got it started
 set.seed(5)
-ids <- sample(demo$pid, 1)
-x <- c(events_game, events_survey) %>% 
-  map(
-    ~tbl(duck, .) %>% 
-      filter(pid %in% ids) %>% 
-      select(
-        pid, 
-        EventName, 
-        Time, 
-        Time_utc, 
-        any_of(c("LastStudyPromptType", "response"))
-        ) %>% 
-      collect()
-    ) %>% 
-  bind_rows() %>% 
-  arrange(pid, Time)
-
-# date(x$Time) <- as.Date("2022-08-20")
-x2 <- x %>% 
-  mutate(day = yday(Time)) %>% 
-  add_count(day) %>% 
-  filter(n == max(n))
-
-library(ggbeeswarm)
-p_day_game <- x2 %>% 
-  filter(EventName %in% events_game) %>% 
-  # mutate(hour = hour(Time)) %>% 
-  ggplot(aes(Time, EventName, col = EventName)) +
-  scale_x_datetime(
-    date_breaks = "hour", date_labels = "%H"
-  ) +
-  geom_point(
-    position = position_quasirandom(
-      groupOnX = FALSE, 
-      varwidth = TRUE,
-      width = .2
+ids <- sample(demo$pid, 100)
+tmp <- tibble(
+  EventName = c(events_game, events_survey)
+) %>% 
+  filter(!(EventName %in% c("game_saved", "opted_in", "opted_out"))) %>% 
+  mutate(
+    data = map(
+      EventName,
+      ~tbl(duck, .) %>% 
+        filter(pid %in% ids) %>% 
+        select(-EventName) %>% 
+        collect()
     )
-  ) +
-  theme(axis.title.y = element_blank())
-
-p_day_survey <- x2 %>% 
-  filter(EventName %in% events_survey) %>% 
-  # mutate(hour = hour(Time)) %>% 
-  ggplot(aes(Time, response, col = LastStudyPromptType)) +
-  scale_x_datetime(
-    date_breaks = "hour", date_labels = "%H"
-  ) +
-  scale_y_continuous(
-    "Response value"
-  ) +
-  stat_smooth(
-    aes(group = LastStudyPromptType), 
-    se = FALSE, span = 1, linewidth = .5
-  ) +
-  geom_point() +
-  theme(
-    axis.title.x = element_blank()
   )
-
-(p_day_survey / p_day_game) +
-  plot_annotation(tag_level = "A") +
-  plot_layout(heights = c(7, 3))
+tmp <- tmp %>% 
+  unnest(data) %>% 
+  select(1:3) %>% 
+  arrange(pid, Time) %>% 
+  group_by(pid) %>% 
+  mutate(
+    lag = difftime(Time, lag(Time, default = Time[1]), units = "min"),
+    new = lag > 30,
+    session = cumsum(new) + 1,
+    date = date(Time)
+  ) %>% 
+  group_by(pid, date, session) %>% 
+  summarise(duration = difftime(Time[length(Time)], Time[1], units = "min"))
+tmp %>% 
+  ggplot(aes(duration)) +
+  scale_y_continuous(
+    "Count",
+    expand = expansion(c(0, 0.1))
+  ) +
+  scale_x_continuous(
+    "Session duration (minutes)"
+  ) +
+  geom_histogram(col = "white", fill = "black")
 ```
 
 
-# Technical Validation[^4]
+# Code Availability
 
-[^4]: This section should present any experiments or analyses that are needed to support the technical quality of the dataset. This section may be supported by figures and tables, as needed.
-
-# Usage Notes[^5]
-
-[^5]: 'Usage Notes' is an optional section that can be used to provide information that may assist other researchers who reuse your data.
-
-# Code Availability[^6]
-
-[^6]: For all studies using custom code, a statement must be included under the subheading "Code Availability" indicating whether and how the code can be accessed, including any restrictions to access. This section should also include information on the versions of any software used, if relevant, and any specific variables or parameters used to generate, test, or process the current dataset. Please see our policy on code availability for more information. The code availability statement should be placed at the end of the manuscript, immediately before the references.
+All the data and code are available under CC-BY 4.0 at XYZ. We processed the raw JSON files automatically exported from PlayFab to AWS S3 using jq and postgresql. We then used R [@rcoreteamLanguageEnvironmentStatistical2022] to post-process those files, including replacing the (already hashed) player IDs with new IDs to prevent reidentification of players by FuturLab. The code to clean those data is also available at XYZ.
 
 # Acknowledgements
 
