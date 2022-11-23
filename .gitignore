@@ -2,7 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
-*_files/
 .Renviron
+ms.log
+ms.docx
 /ms_cache/
 /ms_files/
