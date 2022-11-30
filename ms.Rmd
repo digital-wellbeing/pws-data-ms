@@ -28,13 +28,13 @@ affiliation:
   - id: 1
     institution: Oxford Internet Institute, University of Oxford
   - id: 2
-    institution: Karolinska
+    institution: Karolinska Institutet
   - id: 3
     institution: FuturLab
 authornote: |
   \noindent \textbf{This pre-print is not yet peer-reviewed.}
 keywords: video games, well-being, play behavior, game time, telemetry
-bibliography: "references.bib"
+bibliography: references.bib
 floatsintext: yes
 linenumbers: no
 draft: no
@@ -119,6 +119,9 @@ n_players <- nrow(demo) %>% number(big.mark = ",")
 age_iqr <- quantile(demo$age, probs = c(0.25, 0.75), na.rm = TRUE) %>% 
   paste(collapse = ", ")
 
+# Number of countries
+n_countries <- length(unique(demo$country[!is.na(demo$country)]))
+
 # Number of different events
 # Count only behavioural events, not e.g. automatic data dumps like game_saved
 n_events <- length(unique(events$EventName))
@@ -170,24 +173,23 @@ dat_survey <- bind_rows(
 
 ---
 abstract: |
-  The potential impacts that video games might have on players' well-being and mental health are under increased scrutiny but poorly understood empirically. Although extensively studied, a level of understanding required to address concerns and advice policy is lacking, at least partly because much of this science has relied on artificial settings and limited self-report data. We describe a large-scale and detailed dataset of video game play behaviors and events paired with well-being and motivation reports. `r n_players` (age IQR: [`r age_iqr`]) players of the first person powerwasher PC game PowerWash Simulator volunteered for an experimental version of the game that logged their play behaviors across `r n_events_game` different in-game behaviors and events (e.g. task completion) and `r n_variables` variables (e.g. amount of credit at the time of event), and asked psychological survey instruments via in-game pop-ups. The data consists of `r obs_per_event_game` gameplay events and `r obs_per_event_survey` survey item responses.
+  The potential impacts that video games might have on players' well-being and mental health are under increased scrutiny but poorly understood empirically. Although extensively studied, a level of understanding required to address concerns and advice policy is lacking, at least partly because much of this science has relied on artificial settings and limited self-report data. We describe a large and detailed dataset of video game play behaviors and events paired with well-being and motivation reports. `r n_players` players (from `r n_countries` countries) of the first person powerwasher PC game PowerWash Simulator volunteered for an experimental version of the game that logged their play behaviors across `r n_events_game` different in-game behaviors and events (e.g. task completion) and `r n_variables` variables (e.g. amount of credit at the time of event), and responses to `r length(unique(dat_survey$LastStudyPromptType))` different psychological survey instruments via in-game pop-ups. The data consists of `r obs_per_event_game` gameplay events and `r obs_per_event_survey` survey item responses and is publicly available with a permissive CC0 license at <https://osf.io/wpeh6/>.
 ---
 
 # Background & Summary
 
 Video games offer billions of players [@newzooNewzooGlobalGames2021], worldwide, opportunities for enjoyment, relaxation, competition, achievement, and socializing [@bowmanSocialVideoGaming2022; @halbrookWhenHowVideo2019]. Although video game play has been studied for decades[@markey2020video], and despite widespread worries and hopes about games' potential consequences[@kollinsNovelDigitalIntervention2020; @mentzoniProblematicVideoGame2011] and recent policy decisions to address those[@aarsethScholarsOpenDebate2017; @bbcnewsChinaCutsChildren2021; @kardefelt-wintherCriticalAccountDSM52015], scientists are still uncertain about the psychological effects of play. 
+Because many past studies have been limited by inaccurate self-report measures of play [@kahnWhyWeDistort2014; @parrySystematicReviewMetaanalysis2021], recent efforts have focused on behavioral telemetry---data that are automatically collected by online game platforms and include player behaviors and in-game events [@johannesTimeSpentPlaying2022; @johannesVideoGamePlay2021; @vuorreLargeScaleStudyChanges2021; @vuorreTimeSpentPlaying2022]. While accurate, that telemetry, or what is made available of it, is typically limited to session-aggregated play time and doesn't include potentially critical information about player behaviors and in-game events. As a consequence, while recent studies have been able to measure the quantity of play with great accuracy, the quality of play---what players do and what happens in the game---and its potential effects have remained unknown.
 
-As much of past studies have been limited by inaccurate self-report measures of play [@kahnWhyWeDistort2014; @parrySystematicReviewMetaanalysis2021], recent efforts have focused on behavioral telemetry data---data that are automatically collected by online game platforms and includes player behaviors and in-game events [@johannesTimeSpentPlaying2022; @johannesVideoGamePlay2021; @vuorreLargeScaleStudyChanges2021; @vuorreTimeSpentPlaying2022]. While accurate, that telemetry, or what is made available of it, is typically limited to session-aggregated play time and doesn't include more detailed data on players' behaviors and events. As a consequence, while these recent studies were able to measure the amount of play with great accuracy, the quality of play---players' behaviors and in-game events---remained unknown.
-
-We describe a longitudinal study of video game play, well-being, and motivations, and the resulting large scale dataset that includes an unprecedented level of detail about `r n_players` players' in-game play behaviors and events, in combination with their responses psychological survey instruments, over `r round(diff(range(dat_survey$Time_utc)))` days of game play. (The numbers reported in this manuscript reflect version 1.0 of the dataset [on `r Sys.Date()`; cite repository DOI]; the study is ongoing until further notice.) This study implemented a modified version of a commercially available game that queried participating players' psychological states during play using in-game popups. The combination of detailed play behavior and event data, and players' responses to psychological instruments within the game itself, is a first of its kind dataset and is suitable for both detailed descriptive studies and in-depth statistical modelling of video game play and its relations to players' psychological states. 
+We describe a longitudinal study of video game play, well-being, and motivations, and the resulting dataset that includes an unprecedented level of detail about `r n_players` players' in-game play behaviors and events, in combination with their responses to psychological survey instruments, over `r round(diff(range(dat_survey$Time_utc)))` days of game play. (The numbers reported in this manuscript reflect version 1.0 of the dataset [on `r Sys.Date()`; cite repository DOI]; the study is ongoing until further notice.) We implemented a modified version of a commercially available game that queried participating players' psychological states during play using in-game popups. The combination of detailed play behavior and event data, and players' responses to psychological instruments within the game itself, is a first of its kind dataset and is suitable for both detailed descriptive studies and in-depth statistical modelling of video game play and its relations to players' psychological states. 
 
 # Methods
 
-In this study, we developed a modified version of a commercial video game, and made it available on the same commercial platform (Steam) as the original game. Interested players recruited through various channels opted in to the research version, downloaded it as they would have the regular version, and gave informed consent to the study and data donation. We first describe the game and the modifications in the research version, then the recruitment process, and then the psychological survey instruments that we used.
+In this study, we developed an experimental version of PowerWash Simulator (PWS)[@futurlabPowerWashSimulatorFuturLab2022], a first-person powerwasher game (see Figure \@ref(fig:fig-pws-play)), and made it available on the same commercial platform (Steam) as the original game. Interested players recruited through various channels opted in to the research version, downloaded it as they would have the regular version, and gave informed consent to the study and data donation. We first describe the participants and the recruitment process, then the game and the modifications in the research version, and then the psychological survey instruments that we used.
 
-## PowerWash Simulator
+## Participant recruitment
 
-Our main instrument was an experimental version of PowerWash Simulator (PWS)[@futurlabPowerWashSimulatorFuturLab2022], a first-person powerwasher game (see Figure \@ref(fig:fig-pws-play)). In PWS, players control a character whose task is to use a powerwasher to clean various objects in different environments. The main game offers a career mode, in which the player progresses through different levels (a garage with a single car to be washed, then a backyard with many objects, etc.) by cleaning all the dirty objects in the level. As the players progress, they earn credit, which they can use to buy new nozzles, soaps, and various cosmetic enhancements.
+The main PWS game is available on the Steam platform (at £19.99 on 2022-11-16). Potential participants were initially made aware of the research version of PWS on social media in August of 2022. Both FuturLab and Oxford Internet Institute also hosted websites that advertised the study and instructed potential participants on how to sign up to the study.[@futurlabPowerWashSimulatorResearch2022; @oxfordinternetinstituteOIIResearchersOxford2022] The launch of this study was also noted in news media[@mottPowerWashSimulatorPlayers2022], which may have driven participation.
 
 ```{r}
 #| label: fig-pws-play
@@ -196,9 +198,95 @@ Our main instrument was an experimental version of PowerWash Simulator (PWS)[@fu
 knitr::include_graphics("images/pws.png")
 ```
 
-Before the game was released on Steam, we collaborated with PWS's developer, FuturLab, to implement and make public a modified version of the main game. The academic researchers in our team created the conceptual design of the modifications to the main game, which JB then implemented. That research branch was identical to the main game, except for the following changes: First, it sent detailed game play data (see Data records, below) to the PlayFab back-end service, from which we continuously exported all data to an Amazon Web Services storage bucket for more permanent storage. 
+To participate, players were asked to use Steam to sign up for the experimental branch of PWS, and then download it. After their first log-in, but before entering the game menu, participants read our consent form, indicated that they were 18 years or older, and agreed to voluntarily participate in the study. They then answered basic demographic questions and proceeded to play as usual, but with the differences in the game design as discussed below. Eligible participants must have purchased the game, and we did not pay for participation.
 
-Second, the experimental branch of the game was programmed to surface questions about the players' psychological experiences and states during play using an in-game messaging and response system (Figure \@ref(fig:fig-pws-play)D, and Data records, below). Players' responses to those prompts were sent directly to the academic researchers' Qualtrics database, to which FuturLab members had no access. This ensured the privacy of the participants' survey responses, even from the game developers. 
+Then, in a second wave of recruitment in December 2022, the main branch of PWS was modified to include a button in the main menu that invited players to participate in the experimental branch. After participants joined the research branch of PWS, they were free to withdraw from the study at any point and return to the main branch of the study, and additionally request to have their data deleted. 
+
+## Participants
+
+```{r}
+# Summarise gender
+xd <- demo %>% 
+  count(gender) %>% 
+  replace_na(list(gender = "Declined")) %>% 
+  mutate(x = str_glue("{gender}: {n}")) %>% 
+  pull(x)
+```
+
+We defined a participant as anyone who provided informed consent, was over 18 years old, did not request their data to be deleted, and answered at least one survey item. `r number(nrow(demo), big.mark = ',')` players participated, with a median age of `r median(demo$age, na.rm = TRUE)` (10th and 90th percentile: `r quantile(demo$age, c(.1, .9), TRUE)`). The gender breakdown of our sample was as follows: `r paste(xd, collapse = ", ")`.
+
+```{r}
+#| label: fig-participation-data
+#| include: true
+#| fig-height: 3
+#| fig.cap: Summary of each participant's contribution to the study. A. Player participation durations. B. Numbers of survey responses.
+
+x <- dat_survey %>% 
+  group_by(pid) %>% 
+  summarise(
+    min = min(Time_utc),
+    max = max(Time_utc),
+    `Survey responses` = n()
+  ) %>% 
+  mutate(
+    `Study duration` = difftime(max, min, units = "days")
+  ) %>% 
+  select(-c(min, max)) %>% 
+  pivot_longer(-pid, values_transform = as.numeric) %>% 
+  group_by(name) %>% 
+  filter(value < quantile(value, .99))
+p_study_duration <- x %>% 
+  filter(name == "Study duration") %>% 
+  ggplot(aes(value)) +
+  scale_y_continuous(
+    "Participants",
+    expand = expansion(c(0, 0.025))
+  ) +
+  scale_x_continuous(
+    "Days between first and last response",
+    expand = expansion(0.01)
+  ) +
+  geom_histogram(
+    col = "dodgerblue4", 
+    fill = "dodgerblue1", 
+    alpha = .5, 
+    bins = 50
+  )
+p_survey_responses <- p_study_duration %+% 
+  filter(x, name == "Survey responses") +
+  scale_x_continuous(
+    "Number of survey responses",
+    expand = expansion(0.01)
+  ) +
+  theme(axis.title.y = element_blank())
+
+(p_study_duration | p_survey_responses) +
+  plot_annotation(tag_level = "A") &
+  theme(panel.grid = element_blank())
+```
+
+Because participants could withdraw from the research branch at any point, the duration of each player's participation in the study, and the volume of data contributed, could vary. Figure \@ref(fig:fig-participation-data) summarises each participant's contribution to the study.
+
+```{r}
+x <- demo %>% 
+  count(country) %>% 
+  mutate(country = str_glue("{country} (N = {n})"), .keep = "none") %>% 
+  pull(country) %>% 
+  str_replace("NA ", "Missing data ")
+```
+
+
+Although the main version of PWS is offered in a number of languages, the experimental version was only offered in English. Nevertheless, participants hailed from `r length(x)` countries, with varying numbers of players from each country (`r paste0(x, collapse = ', ')`). 
+
+The study procedures were granted ethical approval by Oxford University's Central University Research Ethics Committee (SSH_OII_CIA_21_011). All participants provided informed consent to participate and reported being 18 years or older.
+
+## PowerWash Simulator
+
+In PWS, players control a character whose task is to use a powerwasher to clean various objects in different environments (Figure \@ref(fig:fig-pws-play)). The main game offers a career mode, in which the player progresses through different levels (a garage with a single car to be washed, then a backyard with many objects, etc.) by cleaning all the dirty objects in the level. As the players progress, they earn credit which can be used to buy new washing equipment, soaps, and various cosmetic enhancements.
+
+Before the game was released on Steam, we collaborated with PWS's developer, FuturLab, to implement and make public a modified version of the main game. The academic researchers in our team created the conceptual design of the modifications to the main game, which JB then implemented. That research branch was identical to the main game, except for the following changes: First, it sent detailed game play data (see Data records, below) to the PlayFab service, from which we continuously exported data to an Amazon Web Services storage bucket for more permanent storage. 
+
+Second, the experimental branch of the game was programmed to surface questions about the players' psychological experiences and states during play using an in-game messaging and response system (Figure \@ref(fig:fig-pws-play)D and Data records, below). Players' responses to those prompts were sent directly to the academic researchers' Qualtrics database, to which FuturLab members had no access. This ensured the privacy of the participants' survey responses, even from the game developers. 
 
 The research version also featured a "Research edition" text in the main menu, to remind players that they are in the experimental version, and a button to return to the regular version. Finally, although the main game had a multiplayer mode, we disabled that in the research version.
 
@@ -235,7 +323,7 @@ dat_survey %>%
   )
 ```
 
-We queried subjective well-being with *"How are you feeling right now?"* with VAS endpoints *"Very bad"* and *"Very good"* [@killingsworthWanderingMindUnhappy2010]. Although feelings of well-being are often measured with separate positive and negative affect dimensions, our study required the least intrusive item possible to not disrupt play more than was necessary, and we therefore used the simple "happiness" question from @killingsworthWanderingMindUnhappy2010. Furthermore, such single-item measures have been found to have good validity and are recommended in intensive longitudinal studies [@songExaminingConcurrentPredictive2022]. 
+We queried subjective well-being with *"How are you feeling right now?"* with VAS endpoints *"Very bad"* and *"Very good"* [@killingsworthWanderingMindUnhappy2010]. Although feelings of well-being are often measured with separate positive and negative affect dimensions, our study required the least intrusive item possible to not disrupt play more than was necessary, and we therefore used the simple "happiness" question[@killingsworthWanderingMindUnhappy2010]. Furthermore, such single-item measures have been found to have good validity and are recommended in intensive longitudinal studies [@songExaminingConcurrentPredictive2022]. 
 
 In order to capture the intrinsically motivating qualities of game play, we queried for "Enjoyment" with *"I was enjoying playing Powerwash Simulator just now."* with VAS endpoints *"Not at all"* to *"As much as possible"* [@johannesVideoGamePlay2021; @johnsonValidationTwoGame2018; @ryanMotivationalPullVideo2006]. 
 
@@ -332,87 +420,9 @@ p_hour <- dat_survey %>%
   plot_annotation(tag_level = "A")
 ```
 
-The items were surfaced with equal probabilities, but the three latter motivation items were added later in the experiment. In addition, at every login, there was a 10% probability that the player was asked the well-being item. We summarize the volumes of participants' responses to the survey items in Figure \@ref(fig:fig-response-data).
-
-## Participant recruitment
-
-The main PWS game is available on the Steam platform (at £19.99 on 2022-11-16). Potential participants were initially made aware of the research version of PWS on social media in August of 2022. Both FuturLab and Oxford Internet Institute also hosted websites that advertised the study and instructed potential participants on how to sign up to the study.[@futurlabPowerWashSimulatorResearch2022; @oxfordinternetinstituteOIIResearchersOxford2022] The launch of this study was also noted in news media[@mottPowerWashSimulatorPlayers2022], which may have driven participation.
-
-<!-- Add here details on second wave launch when appropriate. -->
-
-To participate, players were asked to use Steam to sign up for a different branch of the game. They then downloaded the research branch version. After their first log-in, but before entering the game menu, participants read our consent form, and indicated that they were 18 years or older, and agreed to voluntarily participate in the game. They then answered basic demographic questions and proceeded to play as usual, but with the differences in the game design as discussed in the PWS section.
-
-Then, in a second wave of recruitment in December 2022, the main branch of the game was modified to include a menu button inviting players to participate in the experimental branch (screenshot!).
-
-After participants joined the research branch of PWS, they were free to withdraw from the study at any point and return to the main branch of the study (or stop playing PWS entirely), and request to have their data deleted. 
+The items were surfaced with equal probabilities, but the three latter motivation items were added later in the study. In addition, at every login, there was a 10% probability that the player was asked the well-being item. We summarize the volumes of participants' responses to the survey items in Figure \@ref(fig:fig-response-data).
 
 # Data Records
-
-## Participants
-
-```{r}
-# Summarise gender
-xd <- demo %>% 
-  count(gender) %>% 
-  replace_na(list(gender = "Declined")) %>% 
-  mutate(x = str_glue("{gender}: {n}")) %>% 
-  pull(x)
-```
-
-```{r}
-#| label: fig-participation-data
-#| include: true
-#| fig-height: 3
-#| fig.cap: Summary of each participant's contribution to the study. A. Player participation durations. B. Numbers of survey responses.
-x <- dat_survey %>% 
-  group_by(pid) %>% 
-  summarise(
-    min = min(Time_utc),
-    max = max(Time_utc),
-    `Survey responses` = n()
-  ) %>% 
-  mutate(
-    `Study duration` = difftime(max, min, units = "days")
-  ) %>% 
-  select(-c(min, max)) %>% 
-  pivot_longer(-pid, values_transform = as.numeric) %>% 
-  group_by(name) %>% 
-  filter(value < quantile(value, .99))
-p_study_duration <- x %>% 
-  filter(name == "Study duration") %>% 
-  ggplot(aes(value)) +
-  scale_y_continuous(
-    "Participants",
-    expand = expansion(c(0, 0.025))
-  ) +
-  scale_x_continuous(
-    "Days between first and last response",
-    expand = expansion(0.01)
-  ) +
-  geom_histogram(
-    col = "dodgerblue4", 
-    fill = "dodgerblue1", 
-    alpha = .5, 
-    bins = 50
-  )
-p_survey_responses <- p_study_duration %+% 
-  filter(x, name == "Survey responses") +
-  scale_x_continuous(
-    "Number of survey responses",
-    expand = expansion(0.01)
-  ) +
-  theme(axis.title.y = element_blank())
-
-(p_study_duration | p_survey_responses) +
-  plot_annotation(tag_level = "A") &
-  theme(panel.grid = element_blank())
-```
-
-We defined a participant as anyone who provided informed consent, was over 18 years old, did not request their data to be deleted, and answered at least one survey item. `r nrow(demo)` players participated, with a median age of `r median(demo$age, na.rm = TRUE)` (10th and 90th percentile: `r quantile(demo$age, c(.1, .9), TRUE)`). The gender breakdown of our sample was as follows: `r paste(xd, collapse = ", ")`.
-
-Because participants could withdraw from the research branch at any point, the duration of each player's participation in the study, and the volume of data contributed, could vary. Figure \@ref(fig:fig-participation-data) summarises each participant's contribution to the study.
-
-The study procedures were granted ethical approval by Oxford University's Central University Research Ethics Committee (SSH_OII_CIA_21_011). All participants provided informed consent to participate and reported being 18 years or older.
 
 ## Game play data
 
@@ -555,7 +565,7 @@ p_day_game <- p_day_game +
 # library(ggrepel)
 ```
 
-The research version of PWS recorded `r n_variables` variables describing different facets of the player's status when triggered by one of `r n_events` in-game events or play behaviors. For example, when the player completed a subtask (e.g. washed a window frame of the mansion; a "subtask_completed" *event*), the game saved the current time (a *variable* with millisecond precision); the name of the subtask; the character's current posture (standing, crouching, or prone); the character's current coordinates in the level; which washer, nozzle, and extension the character was currently using; progression within the level (e.g. 80%); and the current game mode (e.g. career mode or free play). The events, and their associated total numbers of observations, are listed in Table \@ref(tab:tbl-summary-events). The events and variables are described in detail in the associated codebook [Zenodo DOI].
+The research version of PWS recorded `r n_variables` variables describing different facets of the player's status when triggered by one of `r n_events` in-game events or play behaviors. For example, when the player completed a subtask (e.g. washed a window frame of the mansion; a "subtask_completed" *event*), the game saved the current time (a *variable* with millisecond precision); the name of the subtask; the character's current posture (standing, crouching, or prone); the character's current coordinates in the level; which washer, nozzle, and extension the character was currently using; progression within the level (e.g. 80%); and the current game mode (e.g. career mode or free play). The events and their associated sample sizes are listed in Table \@ref(tab:tbl-summary-events). The spread of these events over a typical day of play are illustrated in Figure \@ref(fig:fig-playday). The events and variables are described in detail in the associated codebook [Zenodo DOI].
 
 ```{r}
 #| label: tbl-summary-events
@@ -627,18 +637,18 @@ unique(events$EventName) %>%
 
 # Technical Validation
 
-All data was automatically logged either by the PlayFab telemetry collecting system, or sent to the Qualtrics API. Therefore the likelihood of human error was minimised at each step. Nevertheless, quality considerations remained due to various technical issues in the internet connection between the player's computer and PlayFab and Qualtrics, and to improperly configured system clocks on players computers. Therefore, when cleaning and joining the data sources, we ran a series of automated tests to ensure good data quality. These tests are available at [Zenodo DOI].
+All data was automatically sent from the game running on the player's device to either the PlayFab service or to the Qualtrics API. Therefore the likelihood of human error in data transport was minimized. Nevertheless, quality considerations remained due to possible technical problems in the internet connection between the player's computer and PlayFab or Qualtrics, and due to improperly configured system clocks on players computers. Therefore, when cleaning and joining the data sources, we ran a series of automated tests to ensure good data quality. These source code for our tests is available at [DOI].
 
 # Usage Notes
 
-The database is already cleaned and readily analysed with statistical software. Here, we provide a brief conceptual example on how the data can be used to answer substantive questions. A recent report[@johannesVideoGamePlay2021] found that there is a positive yet exceedingly small positive relation between amount of game play and well-being, such that people who on average play more tend to report greater well-being.
+The database is already cleaned and readily analysed with statistical software. Here, we provide a brief conceptual example on how the data can be used to answer substantive questions. A recent report[@johannesVideoGamePlay2021] found that there is a positive yet exceedingly small positive relation between time spent playing and well-being, such that people who on average play more tend to report greater well-being.
 
-These data can be readily used to replicate that finding. We loaded the "subtask_completed" and "study_promp_answered" tables from the DuckDB database, aggregated the data to numbers of subtasks completed and mean response values for each individual. We then drew scatterplots and calculated regression slopes to illustrate the associations between average daily subtasks completed, as a proxy for game engagement, and each of the six psychological measures included in the study. The results replicated [@johannesVideoGamePlay2021]; there was a positive correlation between well-being and game engagement (Figure \@ref(fig:fig-example), "Wellbeing").
+These data can be readily used to replicate that finding. We loaded the "subtask_completed" and "study_promp_answered" tables from the DuckDB database, aggregated the data to numbers of subtasks completed and mean response values for each individual. We then drew scatterplots and calculated regression slopes to illustrate the associations between average daily subtasks completed, as a proxy for game engagement, and each of the six psychological measures included in the study. The results replicated [@johannesVideoGamePlay2021]; there was a positive correlation between well-being and game engagement (Figure \@ref(fig:fig-example), "Wellbeing"). Illustrative code for this analysis is provided at [DOI].
 
 ```{r}
 #| label: fig-example
 #| include: true
-#| fig.cap: An example use of the database showing scatterplots of players' mean item response and average game play engagement (mean subtasks completed per day). Points are individuals, the lines and numbers indicate regression slopes from a simple linear model predicting the outcome from log(mean number of subtasks completed). Code to produce this figure is included in the online repository of this manuscript [Zenodo DOI].
+#| fig.cap: An example use of the database showing scatterplots of players' mean item response and average game play engagement (mean subtasks completed per day). Points are individuals, the lines and numbers indicate regression slopes from a simple linear model predicting the outcome from log(mean number of subtasks completed). Note that the x-axis is on the log scale. Code to produce this figure is included in the online repository of this manuscript [DOI].
 
 ta <- tbl(duck, "subtask_completed") %>% 
   mutate(day = day(Time)) %>% 
@@ -688,14 +698,11 @@ x %>%
   facet_wrap("LastStudyPromptType")
 ```
 
-
 # Code Availability
 
 The study is ongoing and more data are being collected. The numbers in this manuscript are correct as of `r Sys.Date()` (dataset version v1.0).
 
-We provide the data as a single file DuckDB database [@duckdb2022], which is smaller in size and faster to use than individual flat files. The repository associated with this manuscript shows examples of using the database with R. DuckDB is free and open source, and has extensive documentation at <https://duckdb.org/>.
-
-In addition, we provide the individual tables (e.g. demographics, "job_started" events) as flat comma-separated value tables (compressed). All the data are available at [Zenodo DOI].
+We provide the data as a DuckDB database [@duckdb2022] file, which is smaller in size and faster to use than individual flat files. The repository associated with this manuscript shows examples of using the database with R. DuckDB is free and open source, and has extensive documentation at <https://duckdb.org/>. We also provide the individual tables (e.g. demographics, "job_started" events) as compressed comma-separated value tables. All the data are available at [Zenodo DOI].
 
 We processed the raw JSON files using jq and postgresql. We then used R [@rcoreteamLanguageEnvironmentStatistical2022] to post-process those files, including replacing the (already hashed) player IDs with new IDs to prevent reidentification of players by FuturLab.
 
