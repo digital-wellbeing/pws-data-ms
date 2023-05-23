@@ -485,16 +485,7 @@ p_hour <- dat_survey %>%
 
 The items were surfaced with equal probabilities, but the three latter motivation items were added later in the study. In addition, at every login, there was a 10% probability that the player was asked the well-being item. We summarize the volumes of participants' responses to the survey items, including the in-menu self-reports, in Figure \@ref(fig:fig-response-data).
 
-# Data Records
-
 ## Game play data
-
-```{r}
-#| eval: false
-tbl(duck, "subtask_completed") %>% 
-  distinct(LastSubtaskCompleted) %>% 
-  collect()
-```
 
 ```{r}
 #| label: fig-playday
@@ -690,6 +681,10 @@ dbListTables(duck) %>%
   )
 ```
 
+# Data Records
+
+The data and codebook are openly available under a CC-0 license at <https://dx.doi.org/10.17605/OSF.IO/WPEH6> [@vuorrePowerWashSimulatorDataset2022] as a compressed .zip archive of event-specific comma-separated values (.csv) tables. Those .csv files are exported from a DuckDB database [@muhleisenDuckdbDBIPackage2022], and the repository associated with this manuscript shows examples of loading the tables to a DuckDB database for faster processing. Each row in these tables represents an event that occurred in the game, as listed in Table \@ref(tab:tbl-summary-events), including the survey response events (Table \@ref(tab:tbl-summary-survey)). The columns of those tables are variables of interest, which are further explained in the codebook. In addition, the demographics table includes basic person-level variables, such as the participant's age, gender, country, and total number of survey responses contributed.
+
 # Technical Validation
 
 All data was automatically sent from the game running on the player's device to either the PlayFab service or to the Qualtrics API. Therefore the likelihood of human error in data transport was minimized. Nevertheless, quality considerations remained due to possible technical problems in the internet connection between the player's computer and PlayFab or Qualtrics, and due to improperly configured system clocks on players computers. We make our source code openly available for checking our assumptions regarding these data cleaning steps [@vuorrePowerWashSimulatorDataset2022].
@@ -769,9 +764,7 @@ x %>%
 
 # Code Availability
 
-The data and codebook are available at <https://dx.doi.org/10.17605/OSF.IO/WPEH6> [@vuorrePowerWashSimulatorDataset2022] as a compressed archive of event-specific comma-separated values (.csv) tables. Those .csv files are exported from a DuckDB database [@muhleisenDuckdbDBIPackage2022], and the repository associated with this manuscript shows examples of using loading the tables to a DuckDB database for faster processing.
-
-We processed the raw JSON files created by the game using jq and PostgreSQL. We then used R [@rcoreteamLanguageEnvironmentStatistical2022] to post-process those files, including replacing the (already hashed) player IDs with new IDs to prevent reidentification of players by FuturLab Ltd.
+The data used to clean the raw data is openly available at <https://dx.doi.org/10.17605/OSF.IO/WPEH6> [@vuorrePowerWashSimulatorDataset2022]. We processed the raw JSON files created by the game using jq and PostgreSQL. We then used R [@rcoreteamLanguageEnvironmentStatistical2022] to post-process those files, including replacing the (already hashed) player IDs with new IDs to prevent reidentification of players by FuturLab Ltd.
 
 # Acknowledgements
 
