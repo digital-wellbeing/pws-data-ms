@@ -68,7 +68,6 @@ always_allow_html: true
 library(papaja)
 library(scales)
 library(lubridate)
-library(citr)
 library(janitor)
 library(ggpp)
 library(ggbeeswarm)
