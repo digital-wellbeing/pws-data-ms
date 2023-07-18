@@ -47,7 +47,7 @@ tablelist: no
 footnotelist: no
 csl: "nature.csl"
 documentclass: apa7
-classoption: jou
+classoption: doc
 header-includes:
   - |
     \setlength{\parskip}{2pt}
@@ -686,7 +686,7 @@ dbListTables(duck) %>%
 
 # Data Records
 
-The data and codebook are openly available under a CC-0 license at <https://dx.doi.org/10.17605/OSF.IO/WPEH6> [@vuorrePowerWashSimulatorDataset2022] as a compressed .zip archive of event-specific comma-separated values (.csv) tables. Those .csv files are exported from a DuckDB database [@muhleisenDuckdbDBIPackage2022], and the repository associated with this manuscript shows examples of loading the tables to a DuckDB database for faster processing. Each row in these tables represents an event that occurred in the game, as listed in Table \@ref(tab:tbl-summary-events), including the survey response events (Table \@ref(tab:tbl-summary-survey)). The columns of those tables are variables of interest, which are further explained in the codebook. In addition, the demographics table includes basic person-level variables, such as the participant's age, gender, country, and total number of survey responses contributed.
+The data and codebook are openly available under a CC-0 license at <https://dx.doi.org/10.17605/OSF.IO/WPEH6> as a compressed .zip archive of event-specific comma-separated values (.csv) tables [@vuorrePowerWashSimulatorDataset2022]. Those .csv files are exported from a DuckDB database [@muhleisenDuckdbDBIPackage2022], and the repository associated with this manuscript shows examples of loading the tables to a DuckDB database for faster processing. Each row in these tables represents an event that occurred in the game, as listed in Table \@ref(tab:tbl-summary-events), including the survey response events (Table \@ref(tab:tbl-summary-survey)). The columns of those tables are variables of interest, which are further explained in the codebook. In addition, the demographics table includes basic person-level variables, such as the participant's age, gender, country, and total number of survey responses contributed.
 
 # Technical Validation
 
