@@ -97,8 +97,13 @@ theme_set(
 #| cache: false
 
 if (!file.exists("data/data.duckdb")) {
-  # Import database dump to DuckDB
+  dir.create("data/", FALSE)
   
+  # Download and unzip data.zip from https://osf.io/wpeh6/ to ./data/
+  download.file("https://osf.io/download/j48qf/", destfile = "data/data.zip")
+  unzip("data/data.zip")
+  
+  # Import database dump to DuckDB
   # Create empty duckDB database
   duck <- dbConnect(
     duckdb(), 
@@ -106,7 +111,6 @@ if (!file.exists("data/data.duckdb")) {
     read_only = FALSE
   )
   
-  # Download and unzip data.zip from https://osf.io/wpeh6/ to ./data/
   # then import contents to the duckDB database
   dbSendQuery(
     duck,
