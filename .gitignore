@@ -6,7 +6,7 @@
 ms.log
 ms.docx
 *.pdf
-!images/*
+!images/*.pdf
 /ms_cache/
 /ms_files/
 /data/
