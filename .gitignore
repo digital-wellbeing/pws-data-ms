@@ -5,7 +5,8 @@
 .Renviron
 ms.log
 ms.docx
-ms.pdf
+*.pdf
+!images/*
 /ms_cache/
 /ms_files/
 /data/
