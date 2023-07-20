@@ -1,5 +1,5 @@
 ---
-title: 'An intensive longitudinal dataset of video game play, well-being, and motivations: Case study of PowerWash Simulator'
+title: 'An intensive longitudinal dataset of in-game player behaviour and well-being in PowerWash Simulator'
 shorttitle: Intensive longitudinal game play
 leftheader: Intensive longitudinal game play
 author: 
@@ -47,7 +47,7 @@ tablelist: no
 footnotelist: no
 csl: "nature.csl"
 documentclass: apa7
-classoption: doc
+classoption: jou
 header-includes:
   - |
     \setlength{\parskip}{2pt}
@@ -85,7 +85,7 @@ knitr::opts_chunk$set(
 )
 options(knitr.kable.NA = '')
 theme_set(
-  theme_linedraw() +
+  theme_linedraw(base_size = 10) +
     theme(
       panel.grid.minor = element_blank(),
       panel.grid.major = element_blank()
@@ -233,7 +233,7 @@ dat_survey <- bind_rows(
 
 ---
 abstract: |
-  The potential impacts that video games might have on players' well-being and mental health are under increased scrutiny but poorly understood empirically. Although extensively studied, a level of understanding required to address concerns and advise policy is lacking, at least partly because much of this science has relied on artificial settings and limited self-report data. We describe a large and detailed dataset that addresses these issues by pairing video game play behaviors and events with in-game well-being and motivation reports. `r s$n_players` players (from `r s$n_countries` countries) of the first person PC game PowerWash Simulator volunteered for an experimental version of the game that logged their play across `r s$n_events_game` in-game behaviors and events (e.g. task completion) and `r s$n_variables` variables (e.g. current position), and responses to 6 psychological survey instruments via in-game pop-ups. The data consists of `r s$obs_per_event_game` gameplay events, `r s$obs_per_event_survey` survey item responses, and `r s$obs_per_event_status` additional gameplay status records, and spans `r round(diff(range(dat_survey$Time_utc)))` days. The data and codebook are publicly available with a permissive CC0 license.
+  The potential impacts that video games might have on players' well-being are under increased scrutiny but poorly understood empirically. Although extensively studied, a level of understanding required to address concerns and advise policy is lacking, at least partly because much of this science has relied on artificial settings and limited self-report data. We describe a large and detailed dataset that addresses these issues by pairing video game play behaviors and events with in-game well-being and motivation reports. `r s$n_players` players (from `r s$n_countries` countries) of the first person PC game PowerWash Simulator volunteered for an experimental version of the game that logged their play across `r s$n_events_game` in-game behaviors and events (e.g. task completion) and `r s$n_variables` variables (e.g. current position), and responses to 6 psychological survey instruments via in-game pop-ups. The data consists of `r s$obs_per_event_game` gameplay events, `r s$obs_per_event_survey` survey item responses, and `r s$obs_per_event_status` additional gameplay status records, and spans `r round(diff(range(dat_survey$Time_utc)))` days. The data and codebook are publicly available with a permissive CC0 license.
 ---
 
 # Background & Summary
@@ -257,7 +257,7 @@ The main PWS game is available on the Steam platform (at £19.99 on 2022-11-16).
 #| out.width: "\\textwidth"
 #| fig.env: "figure*"
 #| fig-cap: 'Screenshots of PowerWash Simulator gameplay. Top left: Powerwashing a skate park in the Playground level. Top right. Powerwashing a UFO in another level. Bottom left. Looking at the claimed rewards for participation in the study. Bottom right. Providing a Competence response using the in-game pop-up visual analog scale.'
-knitr::include_graphics("images/pws.png")
+knitr::include_graphics("images/pws.pdf")
 ```
 
 To participate, players were asked to use Steam to select the publicly available research edition of PWS, and then download it. After their first log-in, but before entering the game menu, participants read our consent form, indicated that they were 18 years or older, and agreed to voluntarily participate in the study. They then optionally answered basic demographic questions and proceeded to play as usual, but with the differences in the game design as discussed below. Eligible participants had to have purchased the game, and we did not pay for participation.
@@ -284,8 +284,8 @@ We defined a participant as anyone who provided informed consent, was over 18 ye
 ```{r}
 #| label: fig-participation-data
 #| include: true
-#| fig-height: 4
-#| fig.width: 6
+#| fig-height: 3
+#| fig.width: 8
 #| fig.cap: Summary of each participant's contribution to the study. Both axes are trimmed at 99\%. Filled dark point indicates the bivariate mean.
 
 dat_survey %>%
@@ -326,6 +326,7 @@ dat_survey %>%
   ) +
   stat_summary_xy(geom = "point", .fun.y = mean, .fun.x = mean, size = 2.4) +
   theme(aspect.ratio = 1)
+ggsave("Figure-2.pdf", width = 3, height = 3)
 ```
 
 Because participants could withdraw from the research branch at any point, the duration of each player's participation in the study, and the volume of data contributed, could vary. Figure \@ref(fig:fig-participation-data) summarises each participant's contribution to the study.
@@ -346,11 +347,13 @@ The study procedures were granted ethical approval by Oxford University's Centra
 
 ## PowerWash Simulator
 
-In PWS, players control a character whose task is to use a power washer to clean various objects in different environments (Figure \@ref(fig:fig-pws-play); an illustrative video of the actual gameplay on the research edition of PWS is available on YouTube [@futurlabPowerWashSimulatorLaunch2022]). The main game offers a career mode, in which the player progresses through different levels (a garage with a van to be washed, then a backyard with many objects, etc.) by cleaning all the dirty objects in the level. As the players progress, they earn credit which can be used to buy new washing equipment, soaps, and various cosmetic enhancements.
+In PWS, players control a character whose task is to use a power washer to clean various objects in different environments (Figure \@ref(fig:fig-pws-play); an illustrative video of the actual gameplay on the research edition of PWS is available on YouTube at <https://www.youtube.com/watch?v=nIdOILxKsBA> [@futurlabPowerWashSimulatorLaunch2022]). The main game offers a career mode, in which the player progresses through different levels (a garage with a van to be washed, then a backyard with many objects, etc.) by cleaning all the dirty objects in the level. As the players progress, they earn credit which can be used to buy new washing equipment, soaps, and various cosmetic enhancements.
 
-Before the game was released out of early access on Steam, we collaborated with PWS's developer, FuturLab, to implement and make public a modified version of the main game. The academic researchers in our team created the conceptual design of the modifications to the main game, which JB then implemented. That research branch was identical to the main game, except for the following changes: First, it sent detailed game play data (see Data records, below) to the PlayFab service, from which we continuously exported data to an Amazon Web Services S3 storage bucket for intermediate storage. 
+Before the game was released out of early access on Steam, we collaborated with PWS's developer, FuturLab, to implement and make public a modified version of the main game. The academic researchers in our team created the conceptual design of the modifications to the main game, which JB then implemented. That research branch was identical to the main game, except for the following changes: First, it sent detailed game play data such as what happened in the game and when (see Data records, below) to the PlayFab service, from which we continuously exported data to an Amazon Web Services S3 storage bucket for intermediate storage. 
 
 Second, the experimental branch of the game was programmed to surface questions about the players' psychological experiences and states during play using an in-game messaging and response system (Figure \@ref(fig:fig-pws-play)D and Data records, below). Participants could also self-report their mood in the game menu (at most once every 30 minutes). Players' responses to those prompts were sent directly to the academic researchers' Qualtrics database, to which FuturLab members had no access. This ensured the privacy of the participants' survey responses, even from the game developers. 
+
+Participating players received cosmetic items as a form of reward for taking part in the study branch. These were awarded periodically after answering a number of survey items, and were usable in both the research and main versions of PWS. The rewards were not available otherwise in the main version of PWS.
 
 The research edition also featured a "Research Edition" text in the game menu, to remind players that they are in the experimental version, and a button to return to the regular version. The research edition was only available in English, and excluded all downloadable content releases. Finally, although the main game had a multiplayer mode, we disabled that in the research version.
 
@@ -381,13 +384,13 @@ dat_survey %>%
     span_text_columns = FALSE, 
     font_size = "small",
     caption = "Counts of survey item responses",
-    note = "Mdn(o/p): Median observations per player."
+    note = "Mdn(o/p): Median observations per player. 'Wellbeing (menu)' indicates well-being responses that were volunteered through the game menu, instead of provided via the in-game prompts (see main text.)"
   )
 ```
 
 We queried subjective well-being with *"How are you feeling right now?"* with VAS endpoints *"Very bad"* and *"Very good"* [@killingsworthWanderingMindUnhappy2010]. Although feelings of well-being are often measured with separate positive and negative affect dimensions, our study required the least intrusive item possible to not disrupt play more than was necessary, and we therefore used the simple "happiness" question[@killingsworthWanderingMindUnhappy2010]. Furthermore, such single-item measures have been found to have good validity and are recommended in intensive longitudinal studies [@songExaminingConcurrentPredictive2022]. 
 
-In order to capture the intrinsically motivating qualities of game play, we queried for "Enjoyment" with *"I was enjoying playing Powerwash Simulator just now."* with VAS endpoints *"Not at all"* to *"As much as possible"* [@johannesVideoGamePlay2021; @johnsonValidationTwoGame2018; @ryanMotivationalPullVideo2006]. 
+In addition to well-being, we measured motivation and need satisfaction states with widely used items [@ryanMotivationalPullVideo2006]. In order to capture the intrinsically motivating qualities of game play, we queried for "Enjoyment" with *"I was enjoying playing Powerwash Simulator just now."* with VAS endpoints *"Not at all"* to *"As much as possible"* [@johannesVideoGamePlay2021; @johnsonValidationTwoGame2018; @ryanMotivationalPullVideo2006]. 
 
 We were also interested in the broad concept of being focused on playing the game, both in terms of a positively valenced absorption [@csikszentmihalyiFlowPsychologyOptimal2009; @martinBriefApproachesAssessing2008], and a more "meditative" quality of attending rather than allowing one's mind to wander [@mrazekMindfulnessMindwanderingFinding2012; @schoolerMetaawarenessPerceptualDecoupling2011]. We measured this quality of focusing on game play with the prompt *"I was totally focused on playing Powerwash Simulator just now."* and a VAS from *"Not at all"* to *"As much as possible"*.
 
@@ -396,8 +399,8 @@ We also queried for players feelings of autonomy, the degree to which they felt 
 ```{r}
 #| label: fig-response-data
 #| include: true
-#| fig-height: 6.4
-#| fig-width: 6
+#| fig-height: 5.4
+#| fig-width: 8
 #| fig.cap: "Survey response volumes over time. A. Counts of daily survey responses and unique players responding to survey items over time. B. Mean counts of survey item observations and unique players over the days of a week. C. Total responses on each day of the week and each hour of the day. All numbers in A-C indicate counts of survey responses only, and not other game play behavior data."
 p_timeline <- dat_survey %>% 
   mutate(
@@ -447,7 +450,7 @@ p_week <- dat_survey %>%
   scale_x_discrete(
     expand = expansion(0.01)
   ) +
-  geom_line(linewidth = 0.8, group = 1) +
+  geom_line(linewidth = 0.7, group = 1) +
   facet_wrap("name", ncol = 1, scales = "free_y") +
   theme(
     axis.title.y = element_blank(), 
@@ -478,56 +481,66 @@ p_hour <- dat_survey %>%
     color = guide_legend(
       nrow = 1, override.aes = list(linewidth = 1.4))
   ) +
-  geom_line(linewidth = 0.8) +
+  geom_line(linewidth = 0.7) +
   theme(legend.position = "bottom")
 
 ((p_timeline | p_week) + plot_layout(widths = c(6.8, 3.2))) /
   p_hour +
   plot_annotation(tag_level = "A")
+
+ggsave("Figure-3.pdf", width = 8, height = 5.4)
 ```
 
-The items were surfaced with equal probabilities, but the three latter motivation items were added later in the study. In addition, at every login, there was a 10% probability that the player was asked the well-being item. We summarize the volumes of participants' responses to the survey items, including the in-menu self-reports, in Figure \@ref(fig:fig-response-data).
+The items were surfaced with equal probabilities, but the three latter motivation items were added to the study three weeks after launch. In addition, at every login, there was a 10% probability that the player was asked the well-being item. We summarize the volumes of participants' responses to the survey items, including the in-menu self-reports, in Figure \@ref(fig:fig-response-data).
 
 ## Game play data
 
 ```{r}
 #| label: fig-playday
 #| include: true
-#| fig-height: 7
-#| fig-width: 6
-#| fig.cap: Figure of one player's game play and survey data for one day. A. Distribution of game play behaviors and events throughout the day. The y-axis indicates different events and behaviors, individual points are observations of those events when they happened (time; x-axis). We jittered the subtask_completed events vertically for visibility. The text labels show example variable values for each event (job_started shows the job name; subtask_completed shows the subtask name). B. Survey responses over time. Lines are exploratory LOESS fits.
+#| fig-height: 4.2
+#| fig-width: 8
+#| fig.cap: Figure of one player's game play and survey data for one day. A. Distribution of game play behaviors and events throughout the day. The y-axis indicates different events and behaviors, individual points are observations of those events when they happened (time; x-axis). We jittered the subtask_completed events vertically for visibility. The text labels show example variable values for each event (job_started shows the job name; subtask_completed shows the subtask name). B. Survey responses over time. Lines are exploratory generalized additive model fits.
 
-# Pick a person with plenty of data for an informative figure
-ids <- dat_survey %>% 
-  count(pid) %>% 
-  arrange(desc(n)) %>% 
-  slice(5) %>% 
-  pull(pid)
+# Count person-days to choose one with plenty of data for an informative figure
+pdays <- dat_survey |> 
+  mutate(day = yday(Time)) |> 
+  count(pid, day, LastStudyPromptType) |> 
+  add_count(pid, day) |> 
+  filter(nn == 6) |> 
+  summarise(n = sum(n, na.rm = TRUE), .by = c(pid, day)) |> 
+  arrange(desc(n))
 
 x <- c(s$events_game, s$events_survey) %>% 
   map(
     ~tbl(duck, .) %>% 
-      filter(pid %in% ids) %>% 
+      mutate(day = yday(Time)) |>
+      # Pick one person-day here
+      right_join(pdays[3, 1:2], copy = TRUE) |>  
       collect()
   ) %>% 
   bind_rows() %>% 
-  arrange(pid, Time)
-
-x2 <- x %>% 
-  mutate(day = yday(Time)) %>% 
-  add_count(day) %>% 
-  filter(n == max(n)) %>% 
-  arrange(Time) %>% 
+  arrange(pid, Time) |> 
+  drop_na(EventName) |> 
   mutate(EventName = fct_inorder(EventName))
 
-date(x2$Time) <- as.Date("2022-01-01")
-date(x2$Time_utc) <- as.Date("2022-01-01")
+date(x$Time) <- as.Date("2022-01-01")
+date(x$Time_utc) <- as.Date("2022-01-01")
+
+# Ensure that you are showing just one day and not also previous evening/night
+x <- x |> 
+  filter(Time > as_datetime("2022-01-01 05:00:00"))
 
 # Highlight a few responses
 set.seed(1)
-highlights <- x2 %>% 
-  filter(EventName %in% c("study_prompt_answered", "subtask_completed", "job_started")) %>% 
-  select(EventName, Time, LastSubtaskCompleted, CurrentJobName, LastStudyPromptType, response) %>% 
+highlights <- x %>% 
+  filter(
+    EventName %in% c("study_prompt_answered", "subtask_completed", "job_started")
+  ) %>% 
+  select(
+    EventName, Time, LastSubtaskCompleted, 
+    CurrentJobName, LastStudyPromptType, response
+  ) %>% 
   group_by(EventName, LastStudyPromptType) %>% 
   slice_sample(n = 1) %>% 
   ungroup() %>% 
@@ -542,7 +555,7 @@ highlights <- x2 %>%
   ) %>% 
   replace_na(list(LastStudyPromptType = "Wellbeing"))
 
-p_day_game <- x2 %>% 
+p_day_game <- x %>% 
   ggplot(aes(Time, EventName)) +
   scale_y_discrete(position = "right") +
   scale_x_datetime(
@@ -555,18 +568,18 @@ p_day_game <- x2 %>%
     position = position_quasirandom(
       groupOnX = FALSE, 
       varwidth = TRUE,
-      width = .4
+      width = .2
     ),
     aes(
       alpha = EventName == "subtask_completed",
       size = EventName == "subtask_completed"
     ),
-    col = "dodgerblue1"
+    col = "dodgerblue1", size = .75
   ) +
   geom_point(
     data = highlights,
     col = "dodgerblue4",
-    size = 2
+    size = 1
   ) +
   theme(
     axis.title = element_blank(),
@@ -574,31 +587,31 @@ p_day_game <- x2 %>%
   )
 
 
-p_day_survey <- x2 %>% 
+p_day_survey <- x %>% 
   filter(EventName %in% s$events_survey) %>% 
   ggplot(aes(Time, response)) +
   scale_color_brewer(
-    "Survey item", 
+    "Survey item",
     palette = "Set1"
   ) +
   scale_x_datetime(
-    date_breaks = "2 hours", date_labels = "%H:%M"
+    date_breaks = "3 hours", date_labels = "%H:%M"
   ) +
   scale_y_continuous(
     "Response value",
     expand = expansion(0.15)
   ) +
   stat_smooth(
-    data = . %>% anti_join(highlights),
-    aes(group = LastStudyPromptType), 
-    se = FALSE, span = 1, linewidth = .75, color = "dodgerblue4"
+    method = mgcv::gam, 
+    formula = y ~ s(x, k = 3, bs = "cr"),
+    se = FALSE,
+    linewidth = .5,
+    col = "dodgerblue4"
   ) +
-  geom_point(size = 2, col = "dodgerblue1") +
+  geom_point(size = 1, col = "dodgerblue1") +
   facet_wrap(
-    "LastStudyPromptType", 
-    ncol = 1, 
-    scales = "free_y",
-    strip.position = "left"
+    "LastStudyPromptType",
+    nrow = 2
   ) +
   theme(legend.position = "none")
 
@@ -615,10 +628,15 @@ p_day_game <- p_day_game +
     point.padding = 0.33
   )
 
+layout <- "
+AAAAAAAAAAAAAAAAA#
+BBBBBBBBBBBBBBBBBB
+"
+
 (p_day_game / p_day_survey) +
   plot_annotation(tag_level = "A") +
-  plot_layout(heights = c(3.5, 6.5))
-# library(ggrepel)
+  plot_layout(design = layout)
+ggsave("Figure-4.pdf", width = 8, height = 4.2)
 ```
 
 The research edition of PWS recorded `r s$n_variables` variables describing different facets of the player's status when triggered by one of `r s$n_events_game` in-game play behaviors (e.g. when the player completed a task) or `r s$n_events_status` status updates (e.g. when the game was saved). For example, when the player completed a subtask (e.g. washed a window frame of the mansion; a "subtask_completed" *event*), the game captured and sent the current time (a *variable* with millisecond precision); the name of the subtask; the character's current posture (standing, crouching, or prone); the character's current coordinates in the level; which washer, nozzle, and extension the character was currently using; progression within the level (e.g. 80%); and the current game mode (e.g. career mode or free play). The events and their associated sample sizes are listed in Table \@ref(tab:tbl-summary-events). The spread of these events over a typical day of play are illustrated in Figure \@ref(fig:fig-playday). The events and variables are described in detail in the associated codebook [@vuorrePowerWashSimulatorDataset2022].
@@ -694,21 +712,21 @@ All data was automatically sent from the game running on the player's device to 
 
 # Usage Notes
 
-The database is already cleaned and ready to be analysed with statistical software. Here, we provide a brief conceptual example on how the data can be used to answer substantive questions. A recent report[@johannesVideoGamePlay2021] found that there is a positive yet exceedingly small relation between time spent playing and well-being, such that people who on average play more tend to report greater well-being.
+The database is already cleaned and ready to be analysed with statistical software. Here, we provide a brief conceptual example on how the data can be used to answer substantive questions. A recent report[@johannesVideoGamePlay2021] found that there is a positive yet exceedingly small relation between time spent playing and well-being, such that people who on average play more tend to report greater well-being. However, that study and others like it have focused on longer time spans (typically two weeks) under which the estimated associations are assumed to operate. The current dataset, with psychological states and play measured practically in the same instance, allows examining associations operating at much shorter time spans.
 
-These data can be readily used to replicate that finding. We loaded the "subtask_completed" and "study_prompt_answered" tables from the DuckDB database, aggregated the data to numbers of subtasks completed and mean response values for each individual. We then drew scatterplots and calculated regression slopes to illustrate the associations between average daily subtasks completed, as a proxy for game engagement, and each of the six psychological measures included in the study. The results replicated [@johannesVideoGamePlay2021]; there was a positive correlation between well-being and game engagement (Figure \@ref(fig:fig-example), "Wellbeing"). The code to conduct these analyses is included in the source repository of this manuscript.
+These data can be readily used to replicate that finding but under different assumptions about time spans in which the associations are assumed to operate. We loaded the "subtask_completed" and "study_prompt_answered" tables from the DuckDB database, aggregated the data to numbers of subtasks completed and mean response values for each individual. We then drew scatterplots and calculated regression slopes to illustrate the associations between average daily subtasks completed, as a proxy for game engagement, and each of the six psychological measures included in the study. The results conceptually replicated [@johannesVideoGamePlay2021]; there was a positive correlation between well-being and game engagement (Figure \@ref(fig:fig-example), "Wellbeing"). The code to conduct these analyses is included in the source repository of this manuscript.
 
 ```{r}
 #| label: fig-example
 #| include: true
-#| fig-width: 6
+#| fig-width: 8
 #| fig-height: 4.8
-#| fig.cap: An example use of the database showing scatterplots of players' mean item response and average game play engagement (mean subtasks completed per day). Points are individuals, the lines and numbers indicate regression slopes from a simple linear model predicting the outcome from log mean number of subtasks completed. Note that the x-axis is on the log scale.
+#| fig.cap: An example use of the database showing scatterplots of players' mean item response and average game play engagement (mean subtasks completed per day). Points are individuals, the lines and numbers indicate regression slopes from a censored regression model of the outcome on the log mean number of subtasks completed. Note that the x-axis is on the log scale.
 
 ta <- tbl(duck, "subtask_completed") %>% 
   mutate(day = day(Time)) %>% 
   count(pid, day) %>% 
-  summarise(n = mean(n), .by = pid) %>% 
+  summarise(n = mean(n, na.rm = TRUE), .by = pid) %>% 
   collect()
 tb <- tbl(duck, "study_prompt_answered") %>% 
   group_by(pid, LastStudyPromptType) %>% 
@@ -763,11 +781,12 @@ x %>%
     aspect.ratio = 1,
     plot.margin = unit(rep(14, 4), "pt")
     )
+ggsave("Figure-5.pdf", width = 8, height = 4.2)
 ```
 
 # Code Availability
 
-The data used to clean the raw data is openly available at <https://dx.doi.org/10.17605/OSF.IO/WPEH6> [@vuorrePowerWashSimulatorDataset2022]. We processed the raw JSON files created by the game using jq and PostgreSQL. We then used R [@rcoreteamLanguageEnvironmentStatistical2022] to post-process those files, including replacing the (already hashed) player IDs with new IDs to prevent reidentification of players by FuturLab Ltd.
+The data used to clean the raw data is openly available at <https://dx.doi.org/10.17605/OSF.IO/WPEH6> [@vuorrePowerWashSimulatorDataset2022]. We processed the raw JSON files created by the game using jq and PostgreSQL. We then used R [@rcoreteamLanguageEnvironmentStatistical2023] to post-process those files, including replacing the (already hashed) player IDs with new IDs to prevent reidentification of players by FuturLab Ltd.
 
 # Acknowledgements
 
