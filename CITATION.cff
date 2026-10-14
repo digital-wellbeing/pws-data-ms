@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+title: |
+  Code supplement to "An intensive longitudinal dataset of video game play, well-being, and motivations: Case study of PowerWash Simulator"
+version: 1.0.1
+license: MIT
+type: software
+abstract: |
+  Abstract The potential impacts that video games might have on players' well-being are under increased scrutiny but poorly understood empirically. Although extensively studied, a level of understanding required to address concerns and advise policy is lacking, at least partly because much of this science has relied on artificial settings and limited self-report data. We describe a large and detailed dataset that addresses these issues by pairing video game play behaviors and events with in-game well-being and motivation reports. 11,080 players (from 39 countries) of the first person PC game PowerWash Simulator volunteered for a research version of the game that logged their play across 10 in-game behaviors and events (e.g. task completion) and 21 variables (e.g. current position), and responses to 6 psychological survey instruments via in-game pop-ups. The data consists of 15,772,514 gameplay events, 726,316 survey item responses, and 21,202,667 additional gameplay status records, and spans 222 days. The data and codebook are publicly available with a permissive CC0 license.
+message: |
+  Please cite as indicated.
+authors:
+  - family-names: Vuorre
+    given-names: Matti
+    orcid: https://orcid.org/0000-0001-5052-066X
+    affiliation: Tilburg University
+  - family-names: Magnusson
+    given-names: Kristoffer
+    orcid: https://orcid.org/0000-0003-0713-0556
+    affiliation: Karolinska Institutet
+  - family-names: Johannes
+    given-names: Niklas
+    orcid: https://orcid.org/0000-0001-6612-2842
+  - family-names: Butlin
+    given-names: James
+  - family-names: Przybylski
+    given-names: Andrew
+    orcid: https://orcid.org/0000-0001-5547-2185
+    affiliation: University of Oxford
+identifiers:
+  - type: doi
+    value: 10.1038/s41597-023-02530-3
+keywords:
+  - psychology
